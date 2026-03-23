@@ -1116,7 +1116,7 @@ def render_dashboard() -> None:
                 for topic_index, topic in enumerate(topics, start=1):
                     status.info(f"Fetching studies for topic {topic_index}/{topic_count}: {topic}")
                     try:
-                        raw_studies = fetch_arxiv_for_topic(topic, per_topic_limit * 2)
+                        raw_studies = fetch_arxiv_for_topic(topic, per_topic_limit * 4)
                     except Exception as exc:
                         st.warning(f"Failed to fetch studies for topic '{topic}': {exc}")
                         progress.progress(topic_index / topic_count)
@@ -1258,7 +1258,7 @@ def render_dashboard() -> None:
                     st.write(f"Relevance Score: {study.relevance_score:.2f}")
                     st.write(study.summary)
                     if study.url:
-                        st.link_button("Read Full Paper", study.url, key=f"read_full_{idx}")
+                        st.link_button("Read Full Paper", study.url)
         else:
             st.markdown(
                 '<div class="placeholder-box">Retrieval output will appear here after fetching by topic.</div>',
