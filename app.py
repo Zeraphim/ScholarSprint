@@ -36,6 +36,7 @@ st.set_page_config(
 
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
 SUMMARY_CACHE_DIR = Path(".cache/study_summaries")
+GENERATED_SUMMARIES_FILE = Path(".cache/generated_summaries.json")
 OPENROUTER_MAX_RETRIES = 2
 OPENROUTER_RETRY_BASE_DELAY = 1.2
 MODEL_OPTIONS = [
@@ -387,6 +388,33 @@ def summarize_topic_result_with_timing(text: str, topic: str, selected_model: st
     return summary, time.perf_counter() - started_at
 
 
+def load_persisted_generated_summaries() -> list[dict]:
+    if not GENERATED_SUMMARIES_FILE.exists():
+        return []
+    try:
+        payload = json.loads(GENERATED_SUMMARIES_FILE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(payload, list):
+        return []
+    valid_items: list[dict] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        if "file_name" not in item or "summary_text" not in item:
+            continue
+        valid_items.append(item)
+    return valid_items
+
+
+def persist_generated_summaries(items: list[dict]) -> None:
+    try:
+        GENERATED_SUMMARIES_FILE.parent.mkdir(parents=True, exist_ok=True)
+        GENERATED_SUMMARIES_FILE.write_text(json.dumps(items), encoding="utf-8")
+    except OSError:
+        return
+
+
 def extract_text_from_pdf(uploaded_file) -> str:
     try:
         file_bytes = uploaded_file.getvalue()
@@ -475,7 +503,7 @@ def parse_topics(raw_topics: str) -> list[str]:
 
 
 def init_state() -> None:
-    st.session_state.setdefault("generated_summaries", [])
+    st.session_state.setdefault("generated_summaries", load_persisted_generated_summaries())
     st.session_state.setdefault("topic_results", [])
     st.session_state.setdefault("last_error", "")
     st.session_state.setdefault("selected_model", DEFAULT_MODEL)
@@ -923,6 +951,7 @@ def render_dashboard() -> None:
 
                 if generated:
                     st.session_state["generated_summaries"] = generated
+                    persist_generated_summaries(generated)
                     st.success(f"Generated summaries for {len(generated)} file(s).")
 
         generated_summaries = st.session_state.get("generated_summaries", [])
@@ -1191,6 +1220,9 @@ def summary_lines_to_markdown(lines: list[str]) -> list[str]:
     md: list[str] = []
     for raw in lines:
         line = raw.strip()
+        if not line:
+            continue
+        line = re.sub(r"^#{1,6}\s*", "", line)
         if not line:
             continue
         lower = line.lower()
