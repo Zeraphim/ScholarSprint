@@ -541,6 +541,8 @@ def init_state() -> None:
     st.session_state.setdefault("topic_results", [])
     st.session_state.setdefault("last_error", "")
     st.session_state.setdefault("selected_model", DEFAULT_MODEL)
+    if st.session_state.get("selected_model") not in MODEL_OPTIONS:
+        st.session_state["selected_model"] = DEFAULT_MODEL
     st.session_state.setdefault("study_summary_cache", {})
     st.session_state.setdefault("parallel_workers", 4)
     st.session_state.setdefault("use_persistent_cache", True)
@@ -553,7 +555,7 @@ def inject_styles() -> None:
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-            :root {
+            :root 
                 --bg: #f5f1e8;
                 --paper: #fffcf6;
                 --ink: #19242d;
@@ -821,7 +823,6 @@ def render_sidebar() -> None:
         st.selectbox(
             "Summarization Model",
             options=MODEL_OPTIONS,
-            index=MODEL_OPTIONS.index(st.session_state.get("selected_model", DEFAULT_MODEL)),
             key="selected_model",
             help="Edit MODEL_OPTIONS in app.py to add/remove models.",
         )
