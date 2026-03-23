@@ -101,6 +101,26 @@ def clean_text(raw_text: str) -> str:
     return cleaned
 
 
+def normalize_llm_output_markdown(raw_text: str) -> str:
+    text = (raw_text or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not text:
+        return ""
+
+    headings = [
+        "Executive Summary",
+        "Methods and Evidence",
+        "Limitations and Risks",
+        "Executive Brief",
+        "Citation",
+    ]
+    for heading in headings:
+        pattern = rf"(#{'{'}1,6{'}'}\s+(?:\d+\.\s*)?{re.escape(heading)})\s+"
+        text = re.sub(pattern, r"\1\n\n", text, flags=re.IGNORECASE)
+
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text
+
+
 def split_sentences(text: str) -> list[str]:
     if not text:
         return []
@@ -218,10 +238,24 @@ def build_llm_prompt(
         f"- Citation mode: {citation_mode}\n"
         f"- Style preferences: {style_value}\n"
         f"- Guidance: {guidance_value}\n\n"
+        "Formatting rules (strict):\n"
+        "- Return valid Markdown only.\n"
+        "- Each heading must be on its own line, with no body text on the same line.\n"
+        "- Add one blank line after each heading before paragraph text.\n"
+        "- Never write this pattern: '## 1. Executive Summary This ...'.\n"
+        "- Use normal paragraphs for body text; do not make whole paragraphs bold.\n"
+        "- Use bold or italics sparingly for short phrases only.\n\n"
         "Required sections:\n"
         "1) Executive Summary\n"
         "2) Methods and Evidence\n"
         "3) Limitations and Risks\n\n"
+        "Output template (follow exactly):\n"
+        "## Executive Summary\n\n"
+        "<paragraphs here>\n\n"
+        "## Methods and Evidence\n\n"
+        "<paragraphs here>\n\n"
+        "## Limitations and Risks\n\n"
+        "<paragraphs here>\n\n"
         "Input paper content:\n"
         f"\"\"\"\n{text[:24000]}\n\"\"\""
     )
@@ -264,7 +298,7 @@ def summarize_with_openrouter(
     for attempt in range(OPENROUTER_MAX_RETRIES + 1):
         try:
             result = agent.run_sync(prompt)
-            return clean_text(result.output)
+            return normalize_llm_output_markdown(result.output)
         except Exception as exc:
             last_error = exc
             if attempt >= OPENROUTER_MAX_RETRIES:
@@ -667,6 +701,36 @@ def inject_styles() -> None:
 
             .summary-markdown li {
                 margin-bottom: 0.3rem;
+            }
+
+            [data-testid="stMarkdownContainer"] h1,
+            [data-testid="stMarkdownContainer"] h2,
+            [data-testid="stMarkdownContainer"] h3,
+            [data-testid="stMarkdownContainer"] h4 {
+                color: var(--ink);
+                letter-spacing: -0.01em;
+                line-height: 1.35;
+            }
+
+            [data-testid="stMarkdownContainer"] p,
+            [data-testid="stMarkdownContainer"] li {
+                line-height: 1.68;
+            }
+
+            [data-testid="stMarkdownContainer"] strong {
+                font-weight: 700;
+                color: #0f1f2b;
+            }
+
+            [data-testid="stMarkdownContainer"] em {
+                font-style: italic;
+                color: #334452;
+            }
+
+            [data-testid="stMarkdownContainer"] hr {
+                border: 0;
+                border-top: 1px solid var(--line);
+                margin: 1rem 0;
             }
 
             .summary-only-wrap {
@@ -1207,6 +1271,8 @@ def main() -> None:
 def summary_lines_to_markdown(lines: list[str]) -> list[str]:
     sections = {
         "title:": "## Paper",
+        "executive brief:": "## Executive Brief",
+        "citation:": "### Citation",
         "audience:": "### Audience",
         "format:": "### Format",
         "citation mode:": "### Citation Mode",
@@ -1222,9 +1288,15 @@ def summary_lines_to_markdown(lines: list[str]) -> list[str]:
         line = raw.strip()
         if not line:
             continue
-        line = re.sub(r"^#{1,6}\s*", "", line)
-        if not line:
+
+        if line == "---":
+            md.append(line)
             continue
+
+        if re.match(r"^#{1,6}\s+", line):
+            md.append(line)
+            continue
+
         lower = line.lower()
         matched = False
         for prefix, heading in sections.items():
@@ -1242,17 +1314,42 @@ def summary_lines_to_markdown(lines: list[str]) -> list[str]:
             md.append(line)
             continue
 
-        # Render dense prose as bullets for better readability in the dashboard.
-        if len(line.split()) > 18:
-            md.append(f"- {line}")
-        else:
-            md.append(line)
+        md.append(line)
 
     return md
 
 
+def normalize_summary_raw_text(summary_text: str) -> str:
+    summary_text = normalize_llm_output_markdown(summary_text)
+    text = (summary_text or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not text:
+        return ""
+
+    # If a model returns everything in one line, split around common markdown tokens.
+    text = re.sub(r"\s*---\s*", "\n\n---\n\n", text)
+    text = re.sub(r"\s+(#{1,6}\s+)", r"\n\n\1", text)
+
+    section_markers = [
+        "Executive Brief:",
+        "Citation:",
+        "Executive Summary:",
+        "Methods and Evidence:",
+        "Limitations and Risks:",
+        "Custom Guidance Applied:",
+        "Citation Placeholder:",
+    ]
+    for marker in section_markers:
+        pattern = rf"\s+({re.escape(marker)})"
+        text = re.sub(pattern, r"\n\n\1", text, flags=re.IGNORECASE)
+
+    # Collapse excessive blank lines while preserving section spacing.
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text
+
+
 def format_summary_markdown(summary_text: str, fallback_title: str) -> str:
-    lines = [f"Title: {fallback_title}"] + (summary_text or "").splitlines()
+    normalized_text = normalize_summary_raw_text(summary_text)
+    lines = [f"Title: {fallback_title}"] + normalized_text.splitlines()
     formatted_lines = summary_lines_to_markdown(lines)
     if not formatted_lines:
         return "_No summary text available._"
