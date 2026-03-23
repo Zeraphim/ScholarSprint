@@ -859,15 +859,36 @@ def render_sidebar() -> None:
 
 
 def render_kpis() -> None:
+    generated_summaries: list[dict] = st.session_state.get("generated_summaries", [])
+    topic_results: list[Study] = st.session_state.get("topic_results", [])
+
+    uploaded_count = len(generated_summaries)
+    summaries_ready = uploaded_count + len(topic_results)
+    topics_tracked = len({study.matched_topic for study in topic_results})
+    avg_relevance = sum(study.relevance_score for study in topic_results) / len(topic_results) if topic_results else 0.0
+    coverage_score = f"{avg_relevance * 100:.0f}%"
+
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.markdown('<div class="kpi"><div class="value">24</div><div class="label">PDFs Uploaded</div></div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="kpi"><div class="value">{uploaded_count}</div><div class="label">PDFs Uploaded</div></div>',
+            unsafe_allow_html=True,
+        )
     with col2:
-        st.markdown('<div class="kpi"><div class="value">18</div><div class="label">Summaries Ready</div></div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="kpi"><div class="value">{summaries_ready}</div><div class="label">Summaries Ready</div></div>',
+            unsafe_allow_html=True,
+        )
     with col3:
-        st.markdown('<div class="kpi"><div class="value">11</div><div class="label">Topics Tracked</div></div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="kpi"><div class="value">{topics_tracked}</div><div class="label">Topics Tracked</div></div>',
+            unsafe_allow_html=True,
+        )
     with col4:
-        st.markdown('<div class="kpi"><div class="value">92%</div><div class="label">Coverage Score</div></div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="kpi"><div class="value">{coverage_score}</div><div class="label">Coverage Score</div></div>',
+            unsafe_allow_html=True,
+        )
 
 
 def render_uploaded_summary_preview() -> None:
