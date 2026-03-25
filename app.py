@@ -551,68 +551,112 @@ def init_state() -> None:
     st.session_state.setdefault("show_timing_logs", False)
 
 
+def resolve_theme_palette() -> dict[str, str]:
+    theme_base = (st.get_option("theme.base") or "light").lower()
+
+    light_defaults = {
+        "bg": "#f5f1e8",
+        "bg_alt": "#f2efe7",
+        "paper": "#fffcf6",
+        "ink": "#19242d",
+        "muted": "#5d6974",
+        "accent": "#16706b",
+        "accent_soft": "#d9f0ee",
+        "accent_soft_border": "#b5e1dc",
+        "accent_text_on_soft": "#0d4f4a",
+        "line": "#d8d6cc",
+        "card_shadow": "0 10px 35px rgba(25, 36, 45, 0.08)",
+        "snippet_text": "#2b3944",
+        "strong_text": "#0f1f2b",
+        "em_text": "#334452",
+        "file_uploader_bg": "#fcfaf5",
+        "file_uploader_border": "#a5b2be",
+        "placeholder_bg": "#f8fafb",
+        "placeholder_border": "#b8c1c8",
+        "button_border": "#0f5f5a",
+        "button_hover": "#0f5f5a",
+        "sidebar_bg": "#f0ece2",
+        "summary_markdown_bg": "#fffdf8",
+        "markdown_gradient_1": "#fff4df",
+        "markdown_gradient_2": "#d9f0ee",
+    }
+    dark_defaults = {
+        "bg": "#0f1117",
+        "bg_alt": "#11151f",
+        "paper": "#161a24",
+        "ink": "#fafafa",
+        "muted": "#b6b9c2",
+        "accent": "#4a9d9a",
+        "accent_soft": "#1f4d4b",
+        "accent_soft_border": "#2a6563",
+        "accent_text_on_soft": "#a0d9d5",
+        "line": "#2a3042",
+        "card_shadow": "0 10px 35px rgba(0, 0, 0, 0.4)",
+        "snippet_text": "#d0d0d0",
+        "strong_text": "#f0f0f0",
+        "em_text": "#c8c8c8",
+        "file_uploader_bg": "#171b27",
+        "file_uploader_border": "#3e4761",
+        "placeholder_bg": "#171b27",
+        "placeholder_border": "#3e4761",
+        "button_border": "#4a9d9a",
+        "button_hover": "#5ab0ad",
+        "sidebar_bg": "#111621",
+        "summary_markdown_bg": "#151a26",
+        "markdown_gradient_1": "#1a2233",
+        "markdown_gradient_2": "#0f1a2d",
+    }
+
+    defaults = dark_defaults if theme_base == "dark" else light_defaults
+
+    return {
+        **defaults,
+        "bg": st.get_option("theme.backgroundColor") or defaults["bg"],
+        "paper": st.get_option("theme.secondaryBackgroundColor") or defaults["paper"],
+        "ink": st.get_option("theme.textColor") or defaults["ink"],
+        "accent": st.get_option("theme.primaryColor") or defaults["accent"],
+    }
+
+
 def inject_styles() -> None:
+    palette = resolve_theme_palette()
+    theme_css_vars = "\n".join(
+        [
+            ":root {",
+            f"    --bg: {palette['bg']};",
+            f"    --bg-alt: {palette['bg_alt']};",
+            f"    --paper: {palette['paper']};",
+            f"    --ink: {palette['ink']};",
+            f"    --muted: {palette['muted']};",
+            f"    --accent: {palette['accent']};",
+            f"    --accent-soft: {palette['accent_soft']};",
+            f"    --accent-soft-border: {palette['accent_soft_border']};",
+            f"    --accent-text-on-soft: {palette['accent_text_on_soft']};",
+            f"    --line: {palette['line']};",
+            f"    --card-shadow: {palette['card_shadow']};",
+            f"    --snippet-text: {palette['snippet_text']};",
+            f"    --strong-text: {palette['strong_text']};",
+            f"    --em-text: {palette['em_text']};",
+            f"    --file-uploader-bg: {palette['file_uploader_bg']};",
+            f"    --file-uploader-border: {palette['file_uploader_border']};",
+            f"    --placeholder-bg: {palette['placeholder_bg']};",
+            f"    --placeholder-border: {palette['placeholder_border']};",
+            f"    --button-border: {palette['button_border']};",
+            f"    --button-hover: {palette['button_hover']};",
+            f"    --sidebar-bg: {palette['sidebar_bg']};",
+            f"    --summary-markdown-bg: {palette['summary_markdown_bg']};",
+            f"    --markdown-gradient-1: {palette['markdown_gradient_1']};",
+            f"    --markdown-gradient-2: {palette['markdown_gradient_2']};",
+            "}",
+        ]
+    )
+
     st.markdown(
         """
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-            /* Light Mode (default) */
-            :root {
-                /* Light mode colors */
-                --bg: #f5f1e8;
-                --paper: #fffcf6;
-                --ink: #19242d;
-                --muted: #5d6974;
-                --accent: #16706b;
-                --accent-soft: #d9f0ee;
-                --accent-soft-border: #b5e1dc;
-                --accent-text-on-soft: #0d4f4a;
-                --line: #d8d6cc;
-                --card-shadow: 0 10px 35px rgba(25, 36, 45, 0.08);
-                --snippet-text: #2b3944;
-                --strong-text: #0f1f2b;
-                --em-text: #334452;
-                --file-uploader-bg: #fcfaf5;
-                --file-uploader-border: #a5b2be;
-                --placeholder-bg: #f8fafb;
-                --placeholder-border: #b8c1c8;
-                --button-border: #0f5f5a;
-                --button-hover: #0f5f5a;
-                --sidebar-bg: #f0ece2;
-                --summary-markdown-bg: #fffdf8;
-                --markdown-gradient-1: #fff4df;
-                --markdown-gradient-2: #d9f0ee;
-            }
-
-            /* Dark Mode */
-            @media (prefers-color-scheme: dark) {
-                :root {
-                    --bg: #1a1a1a;
-                    --paper: #242424;
-                    --ink: #e8e8e8;
-                    --muted: #a0a0a0;
-                    --accent: #4a9d9a;
-                    --accent-soft: #1f4d4b;
-                    --accent-soft-border: #2a6563;
-                    --accent-text-on-soft: #a0d9d5;
-                    --line: #3a3a3a;
-                    --card-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
-                    --snippet-text: #d0d0d0;
-                    --strong-text: #f0f0f0;
-                    --em-text: #c8c8c8;
-                    --file-uploader-bg: #2a2a2a;
-                    --file-uploader-border: #4a4a4a;
-                    --placeholder-bg: #2a2a2a;
-                    --placeholder-border: #4a4a4a;
-                    --button-border: #4a9d9a;
-                    --button-hover: #5ab0ad;
-                    --sidebar-bg: #1f1f1f;
-                    --summary-markdown-bg: #2a2a2a;
-                    --markdown-gradient-1: #2a2a2a;
-                    --markdown-gradient-2: #2a2a2a;
-                }
-            }
+            __THEME_CSS_VARS__
 
             html, body, [class*="css"] {
                 font-family: 'Space Grotesk', sans-serif;
@@ -623,13 +667,7 @@ def inject_styles() -> None:
                 background:
                     radial-gradient(circle at 0% 0%, var(--markdown-gradient-1) 0%, transparent 35%),
                     radial-gradient(circle at 100% 0%, var(--markdown-gradient-2) 0%, transparent 30%),
-                    linear-gradient(180deg, var(--bg) 0%, #f2efe7 100%);
-            }
-
-            @media (prefers-color-scheme: dark) {
-                .stApp {
-                    background: var(--bg);
-                }
+                    linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
             }
 
             [data-testid="stSidebar"] {
@@ -905,7 +943,7 @@ def inject_styles() -> None:
                 }
             }
         </style>
-        """,
+        """.replace("__THEME_CSS_VARS__", theme_css_vars),
         unsafe_allow_html=True,
     )
 
