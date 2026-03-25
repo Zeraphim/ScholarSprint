@@ -75,10 +75,12 @@ Review a focused, detailed summary view for an individual paper.
 
 ## Model Setup
 
-1. Set your OpenRouter key:
+1. Open OpenRouter: https://openrouter.ai/
+2. Create an API key in your OpenRouter account.
+3. Set your OpenRouter key locally:
 	`export OPENROUTER_API_KEY="your_key_here"`
-2. Choose model from the sidebar in the app.
-3. Edit model list in `app.py` under `MODEL_OPTIONS` to add/remove models.
+4. Choose model from the sidebar in the app.
+5. Edit model list in `app.py` under `MODEL_OPTIONS` to add/remove models.
 
 ## Pages
 
