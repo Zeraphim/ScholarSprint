@@ -18,6 +18,32 @@ The project solves the problem of manual, time-consuming paper review by giving 
 - Caching and reuse: Stores generated summaries in local cache files to reduce repeated work.
 - Streamlit multipage UX: Dedicated pages for each workflow, plus an individual summary detail page.
 
+## Feature Screenshots
+
+### Landing Page
+
+Overview dashboard with quick navigation and app summary.
+
+![Landing page](assets/screenshots/landing.png)
+
+### Summarize Uploaded Research PDF
+
+Upload one or more PDF papers and generate structured summaries.
+
+![Summarize uploaded PDF page](assets/screenshots/summarize_pdf.png)
+
+### Fetch Studies By Topic
+
+Search and fetch relevant studies by topic, then summarize selected results.
+
+![Fetch studies by topic page](assets/screenshots/fetch_studies.png)
+
+### Individual Summary Detail
+
+Review a focused, detailed summary view for an individual paper.
+
+![Individual summary detail page](assets/screenshots/individual_summary.png)
+
 ## Dependencies
 
 - `streamlit`: Builds the web dashboard, UI controls, layout, and app runtime.
