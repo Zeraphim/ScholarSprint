@@ -1,14 +1,9 @@
 <div align="center">
 	<img src="assets/logo.png" alt="Scholar Sprint logo" width="120" />
-
-	<h1>
-		Scholar Sprint
-	</h1>
-
+	<h1>Scholar Sprint</h1>
 	<p>
 		<em>Accelerate your literature review with focused, AI-assisted research summaries.</em>
 	</p>
-
 	<p>
 		<a href="#features">Features</a> •
 		<a href="#feature-screenshots">Screenshots</a> •
