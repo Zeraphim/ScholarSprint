@@ -1,6 +1,26 @@
-# ResearchSummarizer
+<div align="center">
+	<img src="assets/logo.png" alt="Scholar Sprint logo" width="120" />
 
-Streamlit multipage UI for research study summarization workflows.
+	<h1>
+		Scholar Sprint
+	</h1>
+
+	<p>
+		<em>Accelerate your literature review with focused, AI-assisted research summaries.</em>
+	</p>
+
+	<p>
+		<a href="#features">Features</a> •
+		<a href="#feature-screenshots">Screenshots</a> •
+		<a href="#run">Run Locally</a>
+	</p>
+</div>
+
+<p align="center">
+	<img src="https://img.shields.io/badge/Built%20With-Streamlit-ff4b4b?style=for-the-badge" alt="Built with Streamlit" />
+	<img src="https://img.shields.io/badge/Powered%20By-pydantic--ai-0f172a?style=for-the-badge" alt="Powered by pydantic-ai" />
+	<img src="https://img.shields.io/badge/Environment-uv-2ea44f?style=for-the-badge" alt="Environment uv" />
+</p>
 
 ## Project Overview
 
