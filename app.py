@@ -935,6 +935,37 @@ def inject_styles() -> None:
                 color: var(--ink) !important;
             }
 
+            [data-testid="stSidebar"] [data-baseweb="select"] > div,
+            [data-testid="stSelectbox"] [data-baseweb="select"] > div,
+            [data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+                background: var(--paper) !important;
+                border-color: var(--line) !important;
+                box-shadow: none !important;
+            }
+
+            [data-testid="stSidebar"] [data-baseweb="select"]:hover > div,
+            [data-testid="stSelectbox"] [data-baseweb="select"]:hover > div,
+            [data-testid="stMultiSelect"] [data-baseweb="select"]:hover > div,
+            [data-testid="stSidebar"] [data-baseweb="select"]:focus-within > div,
+            [data-testid="stSelectbox"] [data-baseweb="select"]:focus-within > div,
+            [data-testid="stMultiSelect"] [data-baseweb="select"]:focus-within > div {
+                background: var(--paper) !important;
+                border-color: var(--accent) !important;
+                box-shadow: 0 0 0 1px var(--accent-soft-border) !important;
+            }
+
+            [data-testid="stSidebar"] [data-baseweb="select"] input,
+            [data-testid="stMultiSelect"] [data-baseweb="select"] input {
+                background: transparent !important;
+                color: var(--ink) !important;
+            }
+
+            [data-testid="stMultiSelect"] [data-baseweb="tag"] {
+                background: var(--accent-soft) !important;
+                color: var(--accent-text-on-soft) !important;
+                border: 1px solid var(--accent-soft-border) !important;
+            }
+
             [data-testid="stSelectbox"] {
                 color: var(--ink) !important;
             }
