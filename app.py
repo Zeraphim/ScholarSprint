@@ -573,8 +573,10 @@ def resolve_theme_palette() -> dict[str, str]:
         "file_uploader_border": "#a5b2be",
         "placeholder_bg": "#f8fafb",
         "placeholder_border": "#b8c1c8",
-        "button_border": "#0f5f5a",
-        "button_hover": "#0f5f5a",
+        "button_bg": "#d9f0ee",
+        "button_text": "#0d4f4a",
+        "button_border": "#b5e1dc",
+        "button_hover": "#c7e8e4",
         "sidebar_bg": "#f0ece2",
         "summary_markdown_bg": "#fffdf8",
         "markdown_gradient_1": "#fff4df",
@@ -599,8 +601,10 @@ def resolve_theme_palette() -> dict[str, str]:
         "file_uploader_border": "#3e4761",
         "placeholder_bg": "#171b27",
         "placeholder_border": "#3e4761",
-        "button_border": "#4a9d9a",
-        "button_hover": "#5ab0ad",
+        "button_bg": "#2a6563",
+        "button_text": "#d7f0ee",
+        "button_border": "#3a7b78",
+        "button_hover": "#347673",
         "sidebar_bg": "#111621",
         "summary_markdown_bg": "#151a26",
         "markdown_gradient_1": "#1a2233",
@@ -641,6 +645,8 @@ def inject_styles() -> None:
             f"    --file-uploader-border: {palette['file_uploader_border']};",
             f"    --placeholder-bg: {palette['placeholder_bg']};",
             f"    --placeholder-border: {palette['placeholder_border']};",
+            f"    --button-bg: {palette['button_bg']};",
+            f"    --button-text: {palette['button_text']};",
             f"    --button-border: {palette['button_border']};",
             f"    --button-hover: {palette['button_hover']};",
             f"    --sidebar-bg: {palette['sidebar_bg']};",
@@ -895,16 +901,21 @@ def inject_styles() -> None:
             .stDownloadButton > button {
                 border-radius: 10px;
                 border: 1px solid var(--button-border);
-                background: var(--accent);
-                color: white;
+                background: var(--button-bg) !important;
+                color: var(--button-text) !important;
                 font-weight: 600;
                 padding: 0.42rem 0.9rem;
             }
 
+            .stButton > button *,
+            .stDownloadButton > button * {
+                color: var(--button-text) !important;
+            }
+
             .stButton > button:hover,
             .stDownloadButton > button:hover {
-                background: var(--button-hover);
-                border-color: var(--button-border);
+                background: var(--button-hover) !important;
+                border-color: var(--button-border) !important;
             }
 
             /* Input fields and text areas */
