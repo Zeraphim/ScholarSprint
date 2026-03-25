@@ -27,8 +27,8 @@ except ImportError:
 
 
 st.set_page_config(
-    page_title="Research Summarizer Dashboard",
-    page_icon="📚",
+    page_title="Scholar Sprint",
+    page_icon="assets/logo.png",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -44,6 +44,8 @@ MODEL_OPTIONS = [
     "openrouter:minimax/minimax-m2.5",
 ]
 DEFAULT_MODEL = "openrouter:minimax/minimax-m2.5"
+ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+SIDEBAR_LOGO_PATH = ASSETS_DIR / "logo.png"
 STOP_WORDS = {
     "a",
     "an",
@@ -555,15 +557,61 @@ def inject_styles() -> None:
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-            :root 
+            /* Light Mode (default) */
+            :root {
+                /* Light mode colors */
                 --bg: #f5f1e8;
                 --paper: #fffcf6;
                 --ink: #19242d;
                 --muted: #5d6974;
                 --accent: #16706b;
                 --accent-soft: #d9f0ee;
+                --accent-soft-border: #b5e1dc;
+                --accent-text-on-soft: #0d4f4a;
                 --line: #d8d6cc;
                 --card-shadow: 0 10px 35px rgba(25, 36, 45, 0.08);
+                --snippet-text: #2b3944;
+                --strong-text: #0f1f2b;
+                --em-text: #334452;
+                --file-uploader-bg: #fcfaf5;
+                --file-uploader-border: #a5b2be;
+                --placeholder-bg: #f8fafb;
+                --placeholder-border: #b8c1c8;
+                --button-border: #0f5f5a;
+                --button-hover: #0f5f5a;
+                --sidebar-bg: #f0ece2;
+                --summary-markdown-bg: #fffdf8;
+                --markdown-gradient-1: #fff4df;
+                --markdown-gradient-2: #d9f0ee;
+            }
+
+            /* Dark Mode */
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg: #1a1a1a;
+                    --paper: #242424;
+                    --ink: #e8e8e8;
+                    --muted: #a0a0a0;
+                    --accent: #4a9d9a;
+                    --accent-soft: #1f4d4b;
+                    --accent-soft-border: #2a6563;
+                    --accent-text-on-soft: #a0d9d5;
+                    --line: #3a3a3a;
+                    --card-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+                    --snippet-text: #d0d0d0;
+                    --strong-text: #f0f0f0;
+                    --em-text: #c8c8c8;
+                    --file-uploader-bg: #2a2a2a;
+                    --file-uploader-border: #4a4a4a;
+                    --placeholder-bg: #2a2a2a;
+                    --placeholder-border: #4a4a4a;
+                    --button-border: #4a9d9a;
+                    --button-hover: #5ab0ad;
+                    --sidebar-bg: #1f1f1f;
+                    --summary-markdown-bg: #2a2a2a;
+                    --markdown-gradient-1: #2a2a2a;
+                    --markdown-gradient-2: #2a2a2a;
+                }
             }
 
             html, body, [class*="css"] {
@@ -573,14 +621,36 @@ def inject_styles() -> None:
 
             .stApp {
                 background:
-                    radial-gradient(circle at 0% 0%, #fff4df 0%, transparent 35%),
-                    radial-gradient(circle at 100% 0%, #d9f0ee 0%, transparent 30%),
-                    linear-gradient(180deg, #f7f3ea 0%, #f2efe7 100%);
+                    radial-gradient(circle at 0% 0%, var(--markdown-gradient-1) 0%, transparent 35%),
+                    radial-gradient(circle at 100% 0%, var(--markdown-gradient-2) 0%, transparent 30%),
+                    linear-gradient(180deg, var(--bg) 0%, #f2efe7 100%);
+            }
+
+            @media (prefers-color-scheme: dark) {
+                .stApp {
+                    background: var(--bg);
+                }
             }
 
             [data-testid="stSidebar"] {
                 border-right: 1px solid var(--line);
-                background: #f0ece2;
+                background: var(--sidebar-bg);
+            }
+
+            .sidebar-brand-title {
+                margin: 0.1rem 0 0;
+                font-size: 1.18rem;
+                font-weight: 700;
+                color: var(--ink);
+                line-height: 1.2;
+                letter-spacing: -0.01em;
+            }
+
+            .sidebar-brand-subtitle {
+                margin: 0.2rem 0 0.75rem;
+                color: var(--muted);
+                font-size: 0.83rem;
+                line-height: 1.45;
             }
 
             .hero {
@@ -595,6 +665,7 @@ def inject_styles() -> None:
                 margin: 0;
                 font-size: 2rem;
                 letter-spacing: -0.02em;
+                color: var(--ink);
             }
 
             .hero p {
@@ -616,6 +687,7 @@ def inject_styles() -> None:
                 font-size: 1.05rem;
                 font-weight: 700;
                 margin: 0 0 0.35rem;
+                color: var(--ink);
             }
 
             .section-subtitle {
@@ -634,8 +706,8 @@ def inject_styles() -> None:
 
             .pill {
                 background: var(--accent-soft);
-                border: 1px solid #b5e1dc;
-                color: #0d4f4a;
+                border: 1px solid var(--accent-soft-border);
+                color: var(--accent-text-on-soft);
                 padding: 0.2rem 0.6rem;
                 border-radius: 999px;
                 font-size: 0.78rem;
@@ -643,7 +715,7 @@ def inject_styles() -> None:
             }
 
             .summary-card {
-                background: #ffffff;
+                background: var(--paper);
                 border: 1px solid var(--line);
                 border-left: 6px solid var(--accent);
                 border-radius: 14px;
@@ -655,6 +727,7 @@ def inject_styles() -> None:
                 margin: 0;
                 font-size: 0.95rem;
                 font-weight: 700;
+                color: var(--ink);
             }
 
             .summary-meta {
@@ -666,12 +739,12 @@ def inject_styles() -> None:
             .summary-snippet {
                 margin: 0;
                 font-size: 0.88rem;
-                color: #2b3944;
+                color: var(--snippet-text);
                 line-height: 1.5;
             }
 
             .summary-markdown {
-                background: #fffdf8;
+                background: var(--summary-markdown-bg);
                 border: 1px solid var(--line);
                 border-radius: 14px;
                 padding: 1rem 1.1rem;
@@ -683,17 +756,20 @@ def inject_styles() -> None:
                 margin-bottom: 0.55rem;
                 font-size: 1.15rem;
                 letter-spacing: -0.01em;
+                color: var(--ink);
             }
 
             .summary-markdown h3 {
                 margin-top: 0.95rem;
                 margin-bottom: 0.35rem;
                 font-size: 0.98rem;
+                color: var(--ink);
             }
 
             .summary-markdown p {
                 line-height: 1.62;
                 margin-bottom: 0.6rem;
+                color: var(--ink);
             }
 
             .summary-markdown ul {
@@ -703,6 +779,7 @@ def inject_styles() -> None:
 
             .summary-markdown li {
                 margin-bottom: 0.3rem;
+                color: var(--ink);
             }
 
             [data-testid="stMarkdownContainer"] h1,
@@ -717,16 +794,17 @@ def inject_styles() -> None:
             [data-testid="stMarkdownContainer"] p,
             [data-testid="stMarkdownContainer"] li {
                 line-height: 1.68;
+                color: var(--ink);
             }
 
             [data-testid="stMarkdownContainer"] strong {
                 font-weight: 700;
-                color: #0f1f2b;
+                color: var(--strong-text);
             }
 
             [data-testid="stMarkdownContainer"] em {
                 font-style: italic;
-                color: #334452;
+                color: var(--em-text);
             }
 
             [data-testid="stMarkdownContainer"] hr {
@@ -741,16 +819,16 @@ def inject_styles() -> None:
             }
 
             .placeholder-box {
-                border: 1px dashed #b8c1c8;
+                border: 1px dashed var(--placeholder-border);
                 border-radius: 12px;
                 padding: 0.75rem;
-                background: #f8fafb;
+                background: var(--placeholder-bg);
                 color: var(--muted);
                 font-size: 0.86rem;
             }
 
             .kpi {
-                background: #ffffff;
+                background: var(--paper);
                 border: 1px solid var(--line);
                 border-radius: 12px;
                 padding: 0.7rem 0.8rem;
@@ -769,8 +847,8 @@ def inject_styles() -> None:
             }
 
             [data-testid="stFileUploader"] {
-                background: #fcfaf5;
-                border: 1px dashed #a5b2be;
+                background: var(--file-uploader-bg);
+                border: 1px dashed var(--file-uploader-border);
                 border-radius: 12px;
                 padding: 0.2rem;
             }
@@ -778,7 +856,7 @@ def inject_styles() -> None:
             .stButton > button,
             .stDownloadButton > button {
                 border-radius: 10px;
-                border: 1px solid #0f5f5a;
+                border: 1px solid var(--button-border);
                 background: var(--accent);
                 color: white;
                 font-weight: 600;
@@ -787,8 +865,38 @@ def inject_styles() -> None:
 
             .stButton > button:hover,
             .stDownloadButton > button:hover {
-                background: #0f5f5a;
-                border-color: #0f5f5a;
+                background: var(--button-hover);
+                border-color: var(--button-border);
+            }
+
+            /* Input fields and text areas */
+            input, textarea, select {
+                background: var(--paper) !important;
+                color: var(--ink) !important;
+                border-color: var(--line) !important;
+            }
+
+            /* Ensure all text is readable */
+            [data-testid="stMetricLabel"] {
+                color: var(--muted) !important;
+            }
+
+            /* Selectboxes and multiselects */
+            [data-baseweb="select__core"] {
+                color: var(--ink) !important;
+            }
+
+            [data-testid="stSelectbox"] {
+                color: var(--ink) !important;
+            }
+
+            /* Links */
+            a {
+                color: var(--accent) !important;
+            }
+
+            a:hover {
+                color: var(--button-hover) !important;
             }
 
             @media (max-width: 900px) {
@@ -819,6 +927,14 @@ def render_hero() -> None:
 
 def render_sidebar() -> None:
     with st.sidebar:
+        if SIDEBAR_LOGO_PATH.exists():
+            st.image(str(SIDEBAR_LOGO_PATH), use_container_width=True)
+        st.markdown('<p class="sidebar-brand-title">Scholar Sprint</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="sidebar-brand-subtitle">Your AI-powered research summarizer</p>',
+            unsafe_allow_html=True,
+        )
+        st.divider()
         st.markdown("### Workspace Controls")
         st.selectbox(
             "Summarization Model",
