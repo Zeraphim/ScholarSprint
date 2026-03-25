@@ -952,15 +952,56 @@ def render_hero() -> None:
     st.markdown(
         """
         <div class="hero">
-            <h1>Research Summarizer Dashboard</h1>
+            <h1>Scholar Sprint</h1>
             <p>
-                Upload research PDFs, generate structured summaries, and fetch topic-based studies
-                with concise insights. This demo focuses on the interface only.
+                Choose one workflow at a time: summarize uploaded PDFs or fetch studies by topic.
+                The app now separates tasks into focused pages to reduce clutter and cognitive load.
             </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
+
+
+def render_home_hub() -> None:
+    st.markdown("### Start with a Focused Workflow")
+    st.caption("Use the sidebar page navigation or the quick links below.")
+
+    left, right = st.columns(2, gap="large")
+
+    with left:
+        st.markdown('<div class="feature-card">', unsafe_allow_html=True)
+        st.markdown('<p class="section-title">1) Summarize Uploaded Research PDF</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="section-subtitle">Upload one or more papers and generate structured summaries.</p>',
+            unsafe_allow_html=True,
+        )
+        if hasattr(st, "page_link"):
+            st.page_link(
+                "pages/1_Summarize_Uploaded_Research_PDF.py",
+                label="Open PDF Summarization Page",
+            )
+        else:
+            st.info("Open the 'Summarize Uploaded Research PDF' page from the sidebar.")
+        render_uploaded_summary_preview()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with right:
+        st.markdown('<div class="feature-card">', unsafe_allow_html=True)
+        st.markdown('<p class="section-title">2) Fetch Studies by Topic with Summarized Input</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="section-subtitle">Search arXiv topics, filter by relevance, and review concise summaries.</p>',
+            unsafe_allow_html=True,
+        )
+        if hasattr(st, "page_link"):
+            st.page_link(
+                "pages/2_Fetch_Studies_By_Topic.py",
+                label="Open Topic Fetch Page",
+            )
+        else:
+            st.info("Open the 'Fetch Studies by Topic with Summarized Input' page from the sidebar.")
+        render_topic_fetch_preview()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_sidebar() -> None:
@@ -1430,18 +1471,13 @@ def render_dashboard() -> None:
 def main() -> None:
     init_state()
     inject_styles()
-    view_mode = st.query_params.get("view", "dashboard")
-
-    if view_mode == "summary":
-        render_summary_only_page()
-        return
 
     render_sidebar()
     render_hero()
     st.write("")
     render_kpis()
     st.write("")
-    render_dashboard()
+    render_home_hub()
 
 
 def summary_lines_to_markdown(lines: list[str]) -> list[str]:

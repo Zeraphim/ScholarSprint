@@ -1,10 +1,10 @@
 # ResearchSummarizer
 
-Streamlit dashboard UI for research study summarization workflows.
+Streamlit multipage UI for research study summarization workflows.
 
 ## Project Overview
 
-ResearchSummarizer is an interactive Streamlit app for exploring research papers and generating structured summaries. It supports two main workflows: uploading PDF papers and fetching papers by topic from arXiv.
+ResearchSummarizer is an interactive Streamlit app for exploring research papers and generating structured summaries. It separates the experience into focused pages for two main workflows: uploading PDF papers and fetching papers by topic from arXiv.
 
 The project solves the problem of manual, time-consuming paper review by giving users a single UI to collect studies, extract content, and produce concise summaries tailored to audience, length, style, and citation preferences.
 
@@ -16,7 +16,7 @@ The project solves the problem of manual, time-consuming paper review by giving 
 - LLM-powered summarization option: Use OpenRouter models through `pydantic-ai` for higher quality summaries.
 - Local fallback summarization: Uses extractive summarization logic when LLM output is unavailable.
 - Caching and reuse: Stores generated summaries in local cache files to reduce repeated work.
-- Streamlit dashboard UX: Sidebar controls, tabs, and result previews for a guided summarization workflow.
+- Streamlit multipage UX: Dedicated pages for each workflow, plus an individual summary detail page.
 
 ## Dependencies
 
@@ -28,7 +28,7 @@ The project solves the problem of manual, time-consuming paper review by giving 
 ## Run
 
 1. Create and sync environment:
-	`uv venv && uv pip install -r requirements.txt`
+	`uv sync`
 2. Start the app:
 	`uv run streamlit run app.py`
 
@@ -38,6 +38,13 @@ The project solves the problem of manual, time-consuming paper review by giving 
 	`export OPENROUTER_API_KEY="your_key_here"`
 2. Choose model from the sidebar in the app.
 3. Edit model list in `app.py` under `MODEL_OPTIONS` to add/remove models.
+
+## Pages
+
+- Home: Overview, KPI snapshot, and quick links to workflow pages.
+- Summarize Uploaded Research PDF: Upload files and generate structured summaries.
+- Fetch Studies by Topic with Summarized Input: Query arXiv topics and summarize results.
+- Individual Summary: Focused detail view for one generated PDF summary.
 
 ## Scope
 
