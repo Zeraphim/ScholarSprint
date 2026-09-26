@@ -28,6 +28,7 @@ The project solves the problem of manual, time-consuming paper review by giving 
 - PDF upload summarization: Upload one or more PDF studies and generate structured summaries from extracted text.
 - Topic-based paper discovery: Search arXiv by topic, preview returned studies, and summarize selected papers.
 - Configurable summary output: Control summary length, output format, audience, citation mode, and writing style.
+- Multi-format export: Download any generated summary as Markdown, PDF, plain text, LaTeX, or Word (`.docx`).
 - LLM-powered summarization option: Use OpenAI or OpenRouter models through `pydantic-ai` for higher quality summaries.
 - Local fallback summarization: Uses extractive summarization logic when LLM output is unavailable.
 - Caching and reuse: Stores generated summaries in local cache files to reduce repeated work.
@@ -65,6 +66,8 @@ Review a focused, detailed summary view for an individual paper.
 - `pypdf`: Reads uploaded PDF files and extracts document text for summarization.
 - `pydantic-ai`: Creates and runs the LLM agent used to call OpenAI and OpenRouter models.
 - `pydantic`: Provides core data validation/model utilities used by the `pydantic-ai` stack.
+- `fpdf2`: Renders summary exports to PDF (pure Python, no system TeX or browser needed).
+- `python-docx`: Writes summary exports to Word `.docx` documents.
 
 ## Run
 
@@ -117,7 +120,21 @@ OpenRouter models require a separate `OPENROUTER_API_KEY`:
 - Home: Overview, KPI snapshot, and quick links to workflow pages.
 - Summarize Uploaded Research PDF: Upload files and generate structured summaries.
 - Fetch Studies by Topic with Summarized Input: Query arXiv topics and summarize results.
-- Individual Summary: Focused detail view for one generated PDF summary.
+- Individual Summary: Focused detail view for one generated PDF summary, with export to Markdown, PDF, TXT, LaTeX, or `.docx`.
+
+## Summary Exports
+
+The Individual Summary page renders the summary you see on screen into the format you pick:
+
+| Format | Extension | How it is produced |
+| --- | --- | --- |
+| Markdown | `.md` | The source format, with the paper name as the document title |
+| PDF | `.pdf` | Markdown parsed, then laid out with `fpdf2` (no TeX or browser required) |
+| Plain text | `.txt` | Markdown syntax stripped, headings underlined |
+| LaTeX | `.tex` | Standalone `article` document; compiles with `pdflatex` as-is |
+| Word | `.docx` | Built with `python-docx` using Heading, List Bullet, and List Number styles |
+
+All five come from one Markdown parser in `exporters.py`, so headings, lists, bold/italic, inline code, and links stay consistent across formats. Symbols LLMs commonly emit (`≥`, `≈`, `α`, `—`, curly quotes) are mapped to LaTeX commands for the `.tex` export and to ASCII for PDF, whose core fonts are Latin-1 only.
 
 ## Scope
 
