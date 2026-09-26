@@ -28,7 +28,7 @@ The project solves the problem of manual, time-consuming paper review by giving 
 - PDF upload summarization: Upload one or more PDF studies and generate structured summaries from extracted text.
 - Topic-based paper discovery: Search arXiv by topic, preview returned studies, and summarize selected papers.
 - Configurable summary output: Control summary length, output format, audience, citation mode, and writing style.
-- LLM-powered summarization option: Use OpenRouter models through `pydantic-ai` for higher quality summaries.
+- LLM-powered summarization option: Use OpenAI or OpenRouter models through `pydantic-ai` for higher quality summaries.
 - Local fallback summarization: Uses extractive summarization logic when LLM output is unavailable.
 - Caching and reuse: Stores generated summaries in local cache files to reduce repeated work.
 - Streamlit multipage UX: Dedicated pages for each workflow, plus an individual summary detail page.
@@ -63,21 +63,51 @@ Review a focused, detailed summary view for an individual paper.
 
 - `streamlit`: Builds the web dashboard, UI controls, layout, and app runtime.
 - `pypdf`: Reads uploaded PDF files and extracts document text for summarization.
-- `pydantic-ai`: Creates and runs the LLM agent used to call OpenRouter models.
+- `pydantic-ai`: Creates and runs the LLM agent used to call OpenAI and OpenRouter models.
 - `pydantic`: Provides core data validation/model utilities used by the `pydantic-ai` stack.
 
 ## Run
 
-1. Create and sync environment:
-	`uv sync`
-2. Start the app:
-	`uv run streamlit run app.py`
+Requires [uv](https://docs.astral.sh/uv/getting-started/installation/). The project uses Python 3.11 via `.python-version`; uv downloads it if needed.
+
+Run these commands from the repository root:
+
+```sh
+uv sync --locked
+uv run streamlit run app.py
+```
+
+Open http://localhost:8501. Stop the app with `Ctrl+C`.
+
+`uv sync --locked` installs the dependencies declared in `pyproject.toml` at the versions recorded in `uv.lock`, including `pypdf` and `pydantic-ai`, into the project's `.venv`. `requirements.txt` is maintained for pip-based installs; uv does not read it when syncing the project.
+
+If uv warns that `VIRTUAL_ENV` points to another project, run `deactivate` in your terminal, then rerun the commands above. If `deactivate` is unavailable, use `unset VIRTUAL_ENV`. You do not need to activate `.venv` manually or use `--active`.
+
+If an existing checkout reports `ModuleNotFoundError`, stop Streamlit, pull the latest changes, and run `uv sync --locked` before restarting it. Streamlit's Watchdog suggestion is optional and does not prevent startup.
 
 ## Model Setup
 
+Optional: the app uses local fallback summarization without a working API key.
+
+### OpenAI
+
+The app reads `OPENAI_API_KEY` from the environment first, then from a literal assignment in `~/.zprofile`:
+
+```sh
+export OPENAI_API_KEY="your_key_here"
+```
+
+If your key is already in `~/.zprofile`, no extra export command is needed. Start the app and select `openai:gpt-4.1-mini` in the sidebar. This is the default for new sessions when an OpenAI key is found. Requests go directly to OpenAI.
+
+The profile reader accepts plain, single-quoted, or double-quoted key values and optional trailing comments. It does not execute the profile or expand shell commands and variable references. For dynamically generated keys, export them in your shell before launching the app.
+
+### OpenRouter
+
+OpenRouter models require a separate `OPENROUTER_API_KEY`:
+
 1. Open OpenRouter: https://openrouter.ai/
 2. Create an API key in your OpenRouter account.
-3. Set your OpenRouter key locally:
+3. Set your OpenRouter key in the terminal before starting the app:
 	`export OPENROUTER_API_KEY="your_key_here"`
 4. Choose model from the sidebar in the app.
 5. Edit model list in `app.py` under `MODEL_OPTIONS` to add/remove models.

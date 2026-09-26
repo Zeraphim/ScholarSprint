@@ -20,10 +20,11 @@ import streamlit as st
 from pypdf import PdfReader
 
 from pydantic_ai import Agent
-try:
-    from pydantic_ai.models.openai import OpenAISettings
-except ImportError:
-    from pydantic_ai.models.openai import OpenAIModelSettings as OpenAISettings
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.settings import ModelSettings
+
+from api_keys import get_openai_api_key
 
 
 st.set_page_config(
@@ -37,13 +38,14 @@ st.set_page_config(
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
 SUMMARY_CACHE_DIR = Path(".cache/study_summaries")
 GENERATED_SUMMARIES_FILE = Path(".cache/generated_summaries.json")
-OPENROUTER_MAX_RETRIES = 2
-OPENROUTER_RETRY_BASE_DELAY = 1.2
+LLM_MAX_RETRIES = 2
+LLM_RETRY_BASE_DELAY = 1.2
 MODEL_OPTIONS = [
+    "openai:gpt-4.1-mini",
     "openrouter:minimax/minimax-m2.5:free",
     "openrouter:minimax/minimax-m2.5",
 ]
-DEFAULT_MODEL = "openrouter:minimax/minimax-m2.5"
+DEFAULT_MODEL = "openai:gpt-4.1-mini" if get_openai_api_key() else "openrouter:minimax/minimax-m2.5"
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 SIDEBAR_LOGO_PATH = ASSETS_DIR / "logo.png"
 STOP_WORDS = {
@@ -263,7 +265,7 @@ def build_llm_prompt(
     )
 
 
-def summarize_with_openrouter(
+def summarize_with_llm(
     text: str,
     selected_model: str,
     max_words: int,
@@ -273,10 +275,19 @@ def summarize_with_openrouter(
     guidance: str,
     styles: list[str],
 ) -> str:
-    if Agent is None or OpenAISettings is None:
+    if Agent is None or ModelSettings is None:
         raise RuntimeError("pydantic_ai is not available.")
 
-    if not os.getenv("OPENROUTER_API_KEY"):
+    model = selected_model
+    if selected_model.startswith("openai:"):
+        api_key = get_openai_api_key()
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set in the environment or ~/.zprofile.")
+        model = OpenAIChatModel(
+            selected_model.split(":", 1)[1],
+            provider=OpenAIProvider(api_key=api_key),
+        )
+    elif not os.getenv("OPENROUTER_API_KEY"):
         raise RuntimeError("OPENROUTER_API_KEY is not set.")
 
     prompt = build_llm_prompt(
@@ -289,26 +300,26 @@ def summarize_with_openrouter(
         styles=styles,
     )
     agent = Agent(
-        selected_model,
+        model,
         instructions=(
             "You summarize research papers clearly and accurately. "
             "Do not invent citations. If details are missing, say so briefly."
         ),
-        model_settings=OpenAISettings(temperature=0.2),
+        model_settings=ModelSettings(temperature=0.2),
     )
     last_error: Exception | None = None
-    for attempt in range(OPENROUTER_MAX_RETRIES + 1):
+    for attempt in range(LLM_MAX_RETRIES + 1):
         try:
             result = agent.run_sync(prompt)
             return normalize_llm_output_markdown(result.output)
         except Exception as exc:
             last_error = exc
-            if attempt >= OPENROUTER_MAX_RETRIES:
+            if attempt >= LLM_MAX_RETRIES:
                 break
-            delay = OPENROUTER_RETRY_BASE_DELAY * (2 ** attempt)
+            delay = LLM_RETRY_BASE_DELAY * (2 ** attempt)
             time.sleep(delay)
 
-    raise RuntimeError(f"OpenRouter request failed after retries: {last_error}")
+    raise RuntimeError(f"Model request failed after retries: {last_error}")
 
 
 def generate_summary_text(
@@ -321,10 +332,9 @@ def generate_summary_text(
     guidance: str,
     styles: list[str],
 ) -> tuple[str, str]:
-    use_openrouter = selected_model.startswith("openrouter:")
-    if use_openrouter:
+    if selected_model.startswith(("openai:", "openrouter:")):
         try:
-            summary = summarize_with_openrouter(
+            summary = summarize_with_llm(
                 text=text,
                 selected_model=selected_model,
                 max_words=max_words,
@@ -346,7 +356,7 @@ def generate_summary_text(
                 guidance=guidance,
                 styles=styles,
             )
-            return fallback, f"Fallback (extractive) because OpenRouter failed: {exc}"
+            return fallback, f"Fallback (extractive) because {selected_model} failed: {exc}"
 
     fallback = build_structured_summary(
         title="Extractive Summary",
@@ -362,9 +372,9 @@ def generate_summary_text(
 
 
 def summarize_topic_result(text: str, topic: str, selected_model: str) -> str:
-    if selected_model.startswith("openrouter:"):
+    if selected_model.startswith(("openai:", "openrouter:")):
         try:
-            return summarize_with_openrouter(
+            return summarize_with_llm(
                 text=text,
                 selected_model=selected_model,
                 max_words=90,
@@ -1093,7 +1103,10 @@ def render_sidebar() -> None:
         )
         st.slider("Max Summary Length (words)", min_value=100, max_value=1000, value=350, step=50)
         st.divider()
-        st.caption("Set OPENROUTER_API_KEY to enable OpenRouter models. Local fallback is used otherwise.")
+        st.caption(
+            "OpenAI uses OPENAI_API_KEY from your environment or ~/.zprofile. "
+            "OpenRouter uses OPENROUTER_API_KEY. Local fallback is used if the API is unavailable."
+        )
 
 
 def render_kpis() -> None:
